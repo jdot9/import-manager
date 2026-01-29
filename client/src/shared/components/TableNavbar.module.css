@@ -1,0 +1,6 @@
+.table-navbar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin: 10px 10px;
+}

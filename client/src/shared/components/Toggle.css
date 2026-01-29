@@ -1,0 +1,47 @@
+.toggle {
+    width: 120%;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toggle__button {
+    background-color: #d2d2d2;
+    width: 60%;
+    height: 70%;
+    border-radius: 200px;
+    cursor: pointer;
+    position: relative;
+    transition: 0.3s;
+    transform: scaleX(-1);
+}
+
+.toggle__button::before {
+    position: absolute;
+    content: '';
+    background-color: #fff;
+    width: 42%;
+    height: 76%;
+    border-radius: 200px;
+    margin: 5px;
+    transition: 0.3s;
+}
+
+.toggle__input:checked + .toggle__button {
+    background-color: #546e89;
+}
+
+.toggle__input:checked + .toggle__button::before {
+    transform: translateX(-120%);
+}
+
+.toggle__input {
+    display: none;
+}
+
+/* Disable transition on initial mount */
+.toggle__button--no-transition,
+.toggle__button--no-transition::before {
+    transition: none !important;
+}

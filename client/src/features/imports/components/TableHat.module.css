@@ -1,0 +1,25 @@
+.table-hat {
+    display: flex;
+    justify-content: space-between;
+}
+
+.table-hat__title {
+    color: white;
+    margin: 0;
+}
+
+.table-hat__exit {
+    color: white;
+    margin: 0;
+    cursor: pointer;
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.table-hat__exit:hover {
+    transform: scale(1.2);
+}
+
+.table-hat__exit:active {
+    color: #449fff;
+}
+

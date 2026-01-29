@@ -1,0 +1,10 @@
+.connections {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    overflow-y: auto;
+    max-height: 60vh;
+    padding: 0;
+    gap: 5%;
+}

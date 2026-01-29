@@ -1,0 +1,104 @@
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: #2d3e50;
+  overflow: hidden;
+}
+
+.navbar-title {
+  float: left;
+  color: white;
+  margin: 0;
+  padding: 14px 26px;
+  font-size: large;
+  font-weight: 900;
+}
+
+.navbar-list {
+   overflow: hidden;
+   background-color: #2d3e50;
+   list-style-type: none;
+   margin: 0;
+   padding: 0;
+}
+
+.navbar-list__item {
+  float: left;
+}
+
+.navbar-list__item a {
+    display: block;
+    color: white;
+    padding: 14px 26px;
+    text-decoration: none;
+    font-size: large;
+    font-weight: 900;
+    transition: background-color 0.3s ease;
+  }
+
+.navbar-list__item a:hover:not(.selected) {
+    background-color: #546e89;
+  }
+ 
+.navbar-list__item a.selected {
+  background-color: #546e89;
+}
+
+.navbar-list__item--left {
+  float: left;
+  display: flex;
+  align-items: center;
+  padding: 8px 15px;
+}
+
+.navbar-logo {
+  height: 40px;
+  width: auto;
+  display: block;
+}
+
+.navbar-list__item--right {
+  float: right;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 0;
+}
+
+.navbar-list__item--right a {
+  display: block;
+  color: white;
+  padding: 14px 26px;
+  text-decoration: none;
+  font-size: large;
+  font-weight: 900;
+  transition: background-color 0.3s ease;
+}
+
+.navbar-list__item--right a:hover:not(.selected) {
+  background-color: #546e89;
+}
+
+.navbar-list__item--right a.selected {
+  background-color: #546e89;
+}
+
+.navbar-logout-link {
+  display: block;
+  color: white;
+  padding: 14px 26px;
+  text-decoration: none;
+  font-size: large;
+  font-weight: 900;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.navbar-logout-link:hover {
+  background-color: #546e89;
+}
+
+.selected {
+  background-color: #546e89;
+}

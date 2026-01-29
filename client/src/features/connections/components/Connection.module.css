@@ -1,0 +1,24 @@
+.connection {
+    display: inline-block;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.connection:hover {
+    color: #449fff;
+}
+
+.connection:active {
+    color: #9cccff;;
+}
+
+.connection__logo {
+    width: 90px;
+    height: 60px;
+}
+
+.connection__name {
+    font-size: 1.0rem;
+    font-weight: 900;
+}
+

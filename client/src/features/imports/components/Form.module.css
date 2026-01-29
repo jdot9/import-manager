@@ -1,0 +1,104 @@
+.form-group {
+    position: relative;
+    margin-bottom: 20px;
+    margin-right: 15px;
+}
+
+.form-group__label {
+    text-align: left;
+    color: black;
+    display: block;
+    font-size: large;
+    font-weight: 900;
+    margin-bottom: 5px;
+  }
+
+.form-group__btn {
+    position: absolute;
+    margin-top: 5%;
+    right: 100%;
+    transform: translate(100%);
+}
+
+.form-group__input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    transition: box-shadow 0.3s ease;
+    font-weight: 900;
+    font-size: 1.2rem;
+}
+
+.form-group__input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 30px rgba(0, 123, 255, 0.5);
+}
+
+.form__logo {
+    position: relative;
+    bottom: 10px;
+    border-radius: 5px;
+    width: 50%;
+    z-index: 1;
+}
+
+.form__button-group {
+    display: flex;
+    justify-content: flex-end;
+    align-items: left;
+    gap: 10px;
+}
+
+.form__button--save{
+    width: 100%;
+}
+
+.form-group__dual-input {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.form-group__dual-input input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    transition: box-shadow 0.3s ease;
+    font-weight: 900;
+    font-size: 1.2rem;
+}
+
+.form-group__dual-input input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 30px rgba(0, 123, 255, 0.5);
+}
+
+.form-group__select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    transition: box-shadow 0.3s ease;
+    font-weight: 900;
+    font-size: 1.2rem;
+    background-color: white;
+    cursor: pointer;
+}
+
+.form-group__select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 30px rgba(0, 123, 255, 0.5);
+}
+
+.form-group__select option {
+    padding: 8px;
+    font-weight: 900;
+    font-size: 1.2rem;
+    background-color: white;
+    color: black;
+}

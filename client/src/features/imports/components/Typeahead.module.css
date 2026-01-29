@@ -1,0 +1,74 @@
+.typeahead {
+  position: relative;
+  display: inline-block;
+}
+
+.typeahead__input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 2px solid #3a4d5e;
+  border-radius: 15px;
+  font-size: 1.2rem;
+  font-weight: 900;
+  background-color: white;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.typeahead__input:focus {
+  border-color: #4a9eff;
+}
+
+.typeahead__input::placeholder {
+  color: #999;
+  font-weight: 400;
+}
+
+.typeahead__dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: white;
+  border: 2px solid #3a4d5e;
+  border-top: none;
+  border-radius: 0 0 15px 15px;
+  z-index: 1000;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.typeahead__item {
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.15s ease;
+}
+
+.typeahead__item:hover {
+  background-color: #4a9eff;
+  color: white;
+}
+
+.typeahead__item--highlighted {
+  background-color: #4a9eff;
+  color: white;
+}
+
+.typeahead__item:last-child {
+  border-radius: 0 0 13px 13px;
+}
+
+.typeahead__loading {
+  padding: 10px 12px;
+  color: #666;
+  font-style: italic;
+  text-align: center;
+}
+
+.typeahead__empty {
+  padding: 10px 12px;
+  color: #999;
+  text-align: center;
+}
