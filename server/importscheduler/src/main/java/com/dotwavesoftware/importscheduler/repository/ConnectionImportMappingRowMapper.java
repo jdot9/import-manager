@@ -62,6 +62,9 @@ public class ConnectionImportMappingRowMapper implements RowMapper<ConnectionImp
         
         // Map five9_key
         entity.setFive9Key(rs.getBoolean("five9_key"));
+
+        // Map five9 dialing list
+        entity.setFive9DialingList(rs.getString("five9_dialing_list"));
         
         return entity;
     }

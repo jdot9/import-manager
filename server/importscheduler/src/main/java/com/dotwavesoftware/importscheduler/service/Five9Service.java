@@ -345,7 +345,7 @@ xmlns:ser="http://service.admin.ws.five9.com/">
                                     }
                                 }
                                 
-                                logger.info("Five9 dialing list 'JASON_TEST_LIST' size: " + listSize);
+                               // logger.info("Five9 dialing list 'JASON_TEST_LIST' size: " + listSize);
                                 
                                 List<JsonNode> failedRecords = failedRecordsMap.get(importId);
                                 int failedCount = failedRecords != null ? failedRecords.size() : 0;
@@ -402,14 +402,15 @@ xmlns:ser="http://service.admin.ws.five9.com/">
             }
             importDataXml.append("                </values>\n");
         }
-        
+        String dialingListName = mappings.get(0).getFive9DialingList();
+        System.out.println(dialingListName);
         String soapRequest = String.format("""
 <env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"
 xmlns:ser="http://service.admin.ws.five9.com/">
     <env:Header/>
     <env:Body>
         <ser:addToList>
-            <listName>JASON_TEST_LIST</listName>
+            <listName>%s</listName>
             <listUpdateSettings>
 %s                <callTimeColumnNumber>1</callTimeColumnNumber>
                 <crmAddMode>ADD_NEW</crmAddMode>
@@ -423,7 +424,7 @@ xmlns:ser="http://service.admin.ws.five9.com/">
         </ser:addToList>
     </env:Body>
 </env:Envelope>
-""", fieldsMappingXml, importDataXml.toString());
+""", dialingListName, fieldsMappingXml, importDataXml.toString());
         
         // Log the first batch's SOAP request for debugging (truncated)
         if (contacts.size() <= 5) {
