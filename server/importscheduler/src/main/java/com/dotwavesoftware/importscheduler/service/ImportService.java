@@ -167,6 +167,9 @@ public class ImportService {
             
             // Set five9Key (default to false if null)
             entity.setFive9Key(item.getFive9Key() != null && item.getFive9Key() == 1);
+
+            // Set five9 dialing list name
+            entity.setFive9DialingList(item.getFive9DialingList());
             
             // Set mapping format if provided
             if (item.getFormatId() != null) {

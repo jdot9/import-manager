@@ -96,6 +96,7 @@ CREATE TABLE connection_import_mappings (
   import_id INT NOT NULL,
   mapping_format_id INT,
   five9_key TINYINT DEFAULT 0,
+  five9_dialing_list VARCHAR(255),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   modified_at TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (sending_connection_id, receiving_connection_id, import_id, sending_connection_field_name, receiving_connection_field_name),
@@ -132,7 +133,7 @@ END//
 DELIMITER ;
 
 
-
-select * from imports;
+select * from connections;
+select * from connection_import_mappings;
 
 

@@ -2,9 +2,12 @@ const API_BASE_URL = 'http://localhost:8080/api';
 
 class ImportService {
 
-    async saveImport(userUuid, mapping, schedule) {
+    async saveImport(userUuid, mapping, schedule, five9DialingListName) {
         // Extract fields that belong at top level
         const { importName, emailNotifications, email, ...scheduleData } = schedule;
+        
+        mapping.map((item) => item.five9DialingList = five9DialingListName[0])
+
         
         const importData = {
             userUuid: userUuid,
@@ -12,7 +15,7 @@ class ImportService {
             emailNotifications: emailNotifications,
             email: email,
             mapping: mapping,
-            schedule: scheduleData
+            schedule: scheduleData,
         };
         try {
             const response = await fetch(`${API_BASE_URL}/imports`, {
@@ -36,6 +39,8 @@ class ImportService {
             alert('Error saving import: ' + error.message);
             return false;
         }
+            
+            
     }
 
     async getImportsByUser(userUuid) {

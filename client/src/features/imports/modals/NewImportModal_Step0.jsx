@@ -1,5 +1,5 @@
 import Modal from 'react-modal'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 import NewImportModal_Step1 from './NewImportModal_Step1'
 import NewImportModal_Step2 from './NewImportModal_Step2'
@@ -19,6 +19,8 @@ function NewImportModal({modalIsOpen, setModalIsOpen, onImportSaved}) {
     const [hubspotListId, setHubspotListId] = useState(null);
     const [five9ConnectionId, setFive9ConnectionId] = useState(null);
     const [five9DialingList, setFive9DialingListId] = useState(null);
+
+    const testDialingList = useRef(null)
     
     // Step 5 state - lifted up to preserve across navigation
     const [step5Mapping, setStep5Mapping] = useState([]);
@@ -39,8 +41,9 @@ function NewImportModal({modalIsOpen, setModalIsOpen, onImportSaved}) {
         setStep(4);
     }
     
-    const handleFive9DialingListSelect = (dialingListId) => {
-        setFive9DialingListId(dialingListId);
+    // GET DIALING LIST NAME
+    const handleFive9DialingListSelect = (dialingList) => {
+        testDialingList.current = dialingList
         setStep(5);
     }
     
@@ -131,7 +134,7 @@ function NewImportModal({modalIsOpen, setModalIsOpen, onImportSaved}) {
         mapping={step5Mapping}
         onBack={() => setStep(5)}
         onSave={(scheduleData) => {
-          ImportService.saveImport(user?.uuid, step5Mapping, scheduleData).then((success) => {
+          ImportService.saveImport(user?.uuid, step5Mapping, scheduleData, testDialingList.current).then((success) => {
             if (success) {
               setModalIsOpen(false);
               if (onImportSaved) onImportSaved();

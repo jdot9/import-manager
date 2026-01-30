@@ -54,6 +54,9 @@ public class ConnectionImportMappingEntity {
     @Column(name="five9_key")
     private Boolean five9Key = false;
 
+    @Column(name="five9_dialing_list")
+    private String five9DialingList;
+
     @Column(name="created_at")
     private LocalDateTime createdAt;
 

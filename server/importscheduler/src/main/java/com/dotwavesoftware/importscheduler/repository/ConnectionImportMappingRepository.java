@@ -29,7 +29,7 @@ public class ConnectionImportMappingRepository {
     public int save(ConnectionImportMappingEntity entity) {
         String sql = "INSERT INTO connection_import_mappings (sending_connection_id, receiving_connection_id, " +
                      "import_id, uuid, sending_connection_field_name, receiving_connection_field_name, " +
-                     "mapping_format_id, five9_key, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+                     "mapping_format_id, five9_key, five9_dialing_list, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
         
         int rowsAffected = jdbcTemplate.update(sql,
             entity.getId().getSendingConnectionId(),
@@ -39,7 +39,8 @@ public class ConnectionImportMappingRepository {
             entity.getId().getSendingConnectionFieldName(),
             entity.getId().getReceivingConnectionFieldName(),
             entity.getMappingFormat() != null ? entity.getMappingFormat().getId() : null,
-            entity.getFive9Key() != null && entity.getFive9Key() ? 1 : 0
+            entity.getFive9Key() != null && entity.getFive9Key() ? 1 : 0,
+            entity.getFive9DialingList()
         );
         
         logger.info("Saving connection import mapping to database. Rows affected: " + rowsAffected);

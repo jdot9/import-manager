@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useLocation } from "react-router";
 import PropTypes from 'prop-types';
 import Button from '../../../shared/components/Button';
@@ -13,13 +13,16 @@ function NewImportModal_Step4({setModalIsOpen, five9ConnectionId, selectedDialin
    const [loading, setLoading] = useState(true);
    const [selectedId, setSelectedId] = useState(selectedDialingListId);
    const state = useLocation()?.state;
+   const selectedDialingList = useRef(null);
    
    const f9ConnectionId = five9ConnectionId || state?.five9ConnectionId;
    
    const select = (selectedIds) => {
      if (selectedIds && selectedIds.length > 0) {
        setSelectedId(selectedIds[0]);
-       console.log(`Selected Five9 dialing list: ${selectedIds[0]}`);
+       console.log(`Selected Five9 dialing list: ${selectedIds}`);
+       selectedDialingList.current = selectedIds
+       console.log(selectedDialingList.current);
      }
    };
 
@@ -90,7 +93,7 @@ useEffect(() => {
 
       <TableNavbar>
         <Button onClick={() => onBack()}>Back</Button>
-        <Button onClick={() => onDialingListSelect(selectedId)} disabled={!selectedId}>Next</Button>
+        <Button onClick={() => onDialingListSelect(selectedDialingList.current)} disabled={!selectedId}>Next</Button>
       </TableNavbar>
         
     </div>
