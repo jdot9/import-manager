@@ -9,6 +9,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledFuture;
 import java.util.logging.Logger;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Service;
@@ -37,7 +38,6 @@ public class JobSchedulerService {
     private final ConnectionImportMappingRepository mappingRepository;
     private final JobWorker jobWorker;
     private final Executor virtualThreadExecutor;
-    private final ImportProgressService importProgressService;
 
     private final Map<Integer, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
     private final Map<Integer, String> scheduledCronExpressions = new ConcurrentHashMap<>();
@@ -48,8 +48,7 @@ public class JobSchedulerService {
             ImportRepository importRepository,
             ConnectionImportMappingRepository mappingRepository,
             JobWorker jobWorker,
-            Executor virtualThreadExecutor,
-            ImportProgressService importProgressService) {
+            @Qualifier("virtualThreadExecutor") Executor virtualThreadExecutor) {
 
         this.taskScheduler = taskScheduler;
         this.importScheduleRepository = importScheduleRepository;
@@ -57,7 +56,6 @@ public class JobSchedulerService {
         this.mappingRepository = mappingRepository;
         this.jobWorker = jobWorker;
         this.virtualThreadExecutor = virtualThreadExecutor;
-        this.importProgressService = importProgressService;
     }
 
     @PostConstruct
@@ -72,9 +70,7 @@ public class JobSchedulerService {
         logger.info("Scheduled " + scheduledTasks.size() + " import jobs");
     }
 
-    /**
-     * Schedule an import based on its schedule configuration
-     */
+    // Schedule an import based on its schedule configuration
     public void scheduleImport(ScheduleWithImportId scheduleData) {
         ImportScheduleEntity schedule = scheduleData.schedule();
         int importId = scheduleData.importId();
@@ -108,17 +104,20 @@ public class JobSchedulerService {
             importId
         );
 
-        Job job = new Job(JobType.hubspot, payload);
-
-        // Schedule the task
+        Job<HubSpotPayload> job = new Job<>(JobType.hubspot, payload);
+        
         Runnable task = () -> virtualThreadExecutor.execute(() -> {
-            logger.info("Executing scheduled import ID: " + importId);
-            
-            // Update import status to ACTIVE
-            importRepository.updateStatus(importId, "ACTIVE");
-            logger.info("Updated import ID: " + importId + " status to ACTIVE");
-            
-            jobWorker.execute(job);
+            try {
+                logger.info("Executing scheduled import ID: " + importId);
+
+                importRepository.updateStatus(importId, "ACTIVE");
+                logger.info("Updated import ID: " + importId + " status to ACTIVE");
+
+                jobWorker.execute(job);
+
+            } catch (Exception e) {
+                logger.severe("Error executing import ID " + importId + ": " + e.getMessage());
+            }
         });
 
         ScheduledFuture<?> future = taskScheduler.schedule(task, new CronTrigger(cronExpression));
@@ -184,28 +183,25 @@ public class JobSchedulerService {
             importId
         );
 
-        Job job = new Job(JobType.hubspot, payload);
+        Job<HubSpotPayload> job = new Job<>(JobType.hubspot, payload);
 
-        logger.info("Starting HubSpot import on virtual thread - Five9 Connection: " + five9ConnectionId + 
-                   ", HubSpot Connection: " + hubspotConnectionId + 
-                   ", HubSpot List: " + hubspotListId);
-
-        // Execute immediately on virtual thread (same as scheduled tasks)
-        // Status will be set to ACTIVE by Five9Service.importContactsToDialingList
         virtualThreadExecutor.execute(() -> {
-            logger.info("Virtual thread executing import ID: " + importId);
-            jobWorker.execute(job);
-        });
+            try {
+                logger.info("Virtual thread executing import ID: " + importId);
+                jobWorker.execute(job);
 
+            } catch (Exception e) {
+                logger.severe("Error executing import ID " + importId + ": " + e.getMessage());
+            }
+        });
         // Schedule for future runs based on updated start_datetime
         scheduleImportById(importId);
 
         return true;
     }
 
-    /**
-     * Cancel a scheduled job
-     */
+    
+    // Cancel a scheduled job
     public void cancelJob(int importId) {
         ScheduledFuture<?> future = scheduledTasks.remove(importId);
         scheduledCronExpressions.remove(importId);
@@ -254,33 +250,25 @@ public class JobSchedulerService {
         }
     }
 
-    /**
-     * Build day-of-week string from schedule flags
-     */
+    // Build day-of-week string from schedule flags
     private String buildDaysOfWeek(ImportScheduleEntity schedule) {
         StringJoiner joiner = new StringJoiner(",");
-        
         if (schedule.isSunday()) joiner.add("SUN");
         if (schedule.isMonday()) joiner.add("MON");
         if (schedule.isTuesday()) joiner.add("TUE");
         if (schedule.isWednesday()) joiner.add("WED");
         if (schedule.isThursday()) joiner.add("THU");
         if (schedule.isFriday()) joiner.add("FRI");
-        if (schedule.isSaturday()) joiner.add("SAT");
-        
+        if (schedule.isSaturday()) joiner.add("SAT");  
         return joiner.toString();
     }
 
-    /**
-     * Get count of scheduled tasks
-     */
+    // Get count of scheduled tasks
     public int getScheduledTaskCount() {
         return scheduledTasks.size();
     }
 
-    /**
-     * Get all scheduled cron expressions
-     */
+     // Get all scheduled cron expressions
     public Map<Integer, String> getScheduledCronExpressions() {
         return new ConcurrentHashMap<>(scheduledCronExpressions);
     }

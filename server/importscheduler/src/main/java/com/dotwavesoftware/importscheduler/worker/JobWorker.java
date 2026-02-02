@@ -15,7 +15,7 @@ public class JobWorker {
         this.salesforceTask = salesforceTask;
     }
 
-    public void execute(Job job) {
+    public <T> void execute(Job<T> job) {
         switch (job.getType()) {
             case hubspot ->
                 hubspotTask.execute(job.parsePayload(HubSpotPayload.class));

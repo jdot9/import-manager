@@ -43,6 +43,7 @@ public class Five9Service {
     private HubSpotService hubSpotService;
     private ImportProgressService importProgressService;
     private com.dotwavesoftware.importscheduler.repository.ImportRepository importRepository;
+    private Five9RateLimiterService rateLimiter;
     
     // Track failed records per import (importId -> list of failed contacts)
     private final Map<Integer, List<JsonNode>> failedRecordsMap = new ConcurrentHashMap<>();
@@ -52,13 +53,15 @@ public class Five9Service {
                         ConnectionImportMappingRepository connectionImportMappingRepository,
                         HubSpotService hubSpotService,
                         ImportProgressService importProgressService,
-                        com.dotwavesoftware.importscheduler.repository.ImportRepository importRepository) 
+                        com.dotwavesoftware.importscheduler.repository.ImportRepository importRepository,
+                        Five9RateLimiterService rateLimiter) 
     {
         this.connectionRepository = connectionRepository;
         this.connectionImportMappingRepository = connectionImportMappingRepository;
         this.hubSpotService = hubSpotService;
         this.importProgressService = importProgressService;
         this.importRepository = importRepository;
+        this.rateLimiter = rateLimiter;
         this.webClient = WebClient.builder()
                 .baseUrl(baseUrl)
                 .build();
@@ -375,8 +378,41 @@ xmlns:ser="http://service.admin.ws.five9.com/">
 
     /**
      * Send a batch of contacts (max 100) to Five9.
+     * Rate limited to 20 requests per 60 seconds across all threads.
      */
     private Mono<Boolean> sendBatchToFive9(List<JsonNode> contacts, 
+                                            List<ConnectionImportMappingEntity> mappings,
+                                            String fieldsMappingXml,
+                                            String base64credentials,
+                                            int batchNumber,
+                                            int totalBatches) {
+        
+        // Acquire rate limit permit before making the API call
+        // This blocks if we've hit the limit until the 60s cooldown expires
+        return Mono.fromCallable(() -> {
+            try {
+                rateLimiter.acquire();
+                return true;
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                logger.warning("Rate limiter interrupted: " + e.getMessage());
+                return false;
+            }
+        })
+        .flatMap(acquired -> {
+            if (!acquired) {
+                logger.warning("Failed to acquire rate limit permit for batch " + batchNumber);
+                return Mono.just(false);
+            }
+            
+            return sendBatchToFive9Internal(contacts, mappings, fieldsMappingXml, base64credentials, batchNumber, totalBatches);
+        });
+    }
+    
+    /**
+     * Internal method that actually sends the batch to Five9.
+     */
+    private Mono<Boolean> sendBatchToFive9Internal(List<JsonNode> contacts, 
                                             List<ConnectionImportMappingEntity> mappings,
                                             String fieldsMappingXml,
                                             String base64credentials,

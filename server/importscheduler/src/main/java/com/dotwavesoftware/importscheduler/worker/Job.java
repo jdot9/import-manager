@@ -2,14 +2,15 @@ package com.dotwavesoftware.importscheduler.worker;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class Job {
+public class Job<T> {
     
     private static final ObjectMapper objectMapper = new ObjectMapper();
     
     private final JobType type;
-    private final Object payload;
+    private final T payload; // Use generic type instead of Object
+    //private final Object payload;
 
-    public Job(JobType type, Object payload) {
+    public Job(JobType type, T payload) {
         this.type = type;
         this.payload = payload;
     }
@@ -22,7 +23,7 @@ public class Job {
         return objectMapper.convertValue(payload, clazz);
     }
 
-    public Object parsePayload() {
+    public T parsePayload() {
         return payload;
     }
 }
