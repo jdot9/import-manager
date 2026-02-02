@@ -5,6 +5,15 @@ import Button from '../../../shared/components/Button'
 function ImportScheduleForm({ style, previousStepBtn = false, fields = [], formData = {}, onChange, setFormData, onSubmit, mapping}) {
     
     const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const now = new Date();
+    const today = now.toISOString().split("T")[0]; // "YYYY-MM-DD" for date inputs
+    // Format local datetime for datetime-local input (YYYY-MM-DDTHH:MM)
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const nowDateTimeLocal = `${year}-${month}-${day}T${hours}:${minutes}`;
 
     const formatDate = (dateString) => {
         if (!dateString) return '';
@@ -17,6 +26,15 @@ function ImportScheduleForm({ style, previousStepBtn = false, fields = [], formD
             minute: '2-digit'
         });
     };
+
+    // Validation: check if import name is empty
+    const isNameEmpty = !formData.importName || formData.importName.trim() === '';
+
+    // Validation: check if selected datetime is in the past (only when not running immediately)
+    const isDateInPast = !formData.immediately && formData.startDate && new Date(formData.startDate) < now;
+
+    // Disable save button if name is empty or date is in the past
+    const isSaveDisabled = isNameEmpty || isDateInPast;
     
 
     return (
@@ -25,7 +43,6 @@ function ImportScheduleForm({ style, previousStepBtn = false, fields = [], formD
                 <div style={{display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '10px'}}>
                 <label><input type="checkbox" name="recurring" checked={formData.recurring || false} onChange={(e) => setFormData({...formData, recurring: e.target.checked})} />
                 {' '}Recurring </label>
-                    <label><input type="checkbox" name="indefinetely" checked={formData.indefinetely || false} onChange={(e) => setFormData({...formData, indefinetely: e.target.checked})} /> Run Indefinetely</label>
                     <label><input type="checkbox" name="immediately" checked={formData.immediately || false} onChange={(e) => setFormData({...formData, immediately: e.target.checked})} />Run Immediately</label>
                     <label><input type="checkbox" name="emailNotifications" checked={formData.emailNotifications || false} onChange={(e) => setFormData({...formData, emailNotifications: e.target.checked})} />Email Notifications</label>
                 </div>
@@ -34,10 +51,10 @@ function ImportScheduleForm({ style, previousStepBtn = false, fields = [], formD
             {fields.map((field, index) => {
     
                 // Hide fields based on checkbox states (keep in DOM to prevent layout shift)
-                const isStopDateHidden = field.name === 'stopDate' && formData.indefinetely;
+
                 const isStartDateHidden = field.name === 'startDate' && formData.immediately;
                 const isEmailHidden = field.name === 'email' && !formData.emailNotifications;
-                const isFieldHidden = isStopDateHidden || isStartDateHidden || isEmailHidden;
+                const isFieldHidden = isStartDateHidden || isEmailHidden;
                 const inputType = field.type || 'text';
                 
                 return (
@@ -67,6 +84,7 @@ function ImportScheduleForm({ style, previousStepBtn = false, fields = [], formD
                             className={styles['form-group__input']}
                             disabled={isFieldHidden}
                             type={inputType}
+                            {...(inputType === 'date' ? { min: today } : inputType === 'datetime-local' ? { min: nowDateTimeLocal } : {})}
                         />
                     </div>
                 );
@@ -81,7 +99,7 @@ function ImportScheduleForm({ style, previousStepBtn = false, fields = [], formD
          
               {formData.daily && formData.recurring && (
                 <>
-                  <label className='form-group__label'>Days of Week:</label>
+                  <label className='form-group__label'> </label> 
                      <div style={{display: 'flex', gap: '10px', flexWrap: 'wrap'}}>
                     {days.map(day => (
                       <label key={day} style={{display: 'flex', alignItems: 'center', gap: '5px'}}>
@@ -111,9 +129,7 @@ function ImportScheduleForm({ style, previousStepBtn = false, fields = [], formD
               {formData.yearly && formData.recurring && (
                 <div style={{marginTop: '20px'}}>
                   <label className='form-group__label'>
-                    Run once a year {formData.indefinetely 
-                      ? `starting ${formatDate(formData.startDate)}` 
-                      : `from ${formatDate(formData.startDate)} - ${formatDate(formData.stopDate)}`}
+                    {`Run once a year on ${formatDate(formData.startDate)}`}
                   </label>
                 </div>
               )}
@@ -121,7 +137,7 @@ function ImportScheduleForm({ style, previousStepBtn = false, fields = [], formD
 
             <div className={styles['form__button-group']}>
                 <Button onClick={previousStepBtn}>Back</Button>
-                <Button onClick={() => onSubmit(formData)}>Save</Button>
+                <Button onClick={() => onSubmit(formData)} disabled={isSaveDisabled}>Save</Button>
             </div>
         </form>
     )

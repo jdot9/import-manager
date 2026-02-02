@@ -34,7 +34,6 @@ function NewImportModal_Step6({modalIsOpen, setModalIsOpen, hubspotConnectionId,
     const fields = [
         { name: 'importName', label: 'Import Name', required: true },
         { name: 'startDate', label: 'Start Date/Time', type: 'datetime-local', required: true },
-        { name: 'stopDate', label: 'Stop Date/Time', type: 'datetime-local', required: true },
         { name: 'email', label: 'Email Address', type: 'email', required: true }
 
     ];
