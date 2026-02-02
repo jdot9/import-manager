@@ -2,7 +2,7 @@ const API_BASE_URL = 'http://localhost:8080/api';
 
 class ConnectionService {
 
-async saveConnection(connection) {
+async saveConnection(connection, setErrorMessage) {
   try {
     console.log('Saving connection:', JSON.stringify(connection, null, 2));
     const response = await fetch(`${API_BASE_URL}/connections`, {
@@ -18,12 +18,13 @@ async saveConnection(connection) {
       return true;
     } else {
       const errorText = await response.text();
-      alert('Error: ' + errorText);
+      //alert('Error: ' + errorText);
+      setErrorMessage(errorText)
       return false;
     }
   } catch (error) {
     console.error('Error saving connection:', error);
-    alert('Error saving connection: ' + error.message);
+    setErrorMessage('Error saving connection: ' + error.message)
     return false;
   }
 }

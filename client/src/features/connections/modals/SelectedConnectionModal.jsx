@@ -8,9 +8,11 @@ import ConnectionService from '../services/ConnectionService'
 import hubspotlogo from '../assets/Hubspot-Logo.jpg'
 import five9logo from '../assets/Five9-Logo.jpg'
 import salesforcelogo from '../assets/Salesforce-Logo.jpg'
+import styles2 from '../../auth/pages/LoginPage.module.css'
 
 function SelectedConnectionModal({onBack, onClose, onConnectionSaved, selectedConnection, userUuid}) {
 
+  const [errorMessage, setErrorMessage] = useState('');
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -23,13 +25,14 @@ function SelectedConnectionModal({onBack, onClose, onConnectionSaved, selectedCo
   console.log('User UUID:', userUuid);
 
   const handleCreate = async () => {
+    setErrorMessage('');
     const connectionData = {
       ...formData,
       userUuid: userUuid,  // Always use the prop value
       type: selectedConnection === "hubspot" ? "hubspot" : "five9"
     };
     console.log('Creating connection with data:', connectionData);
-    const success = await ConnectionService.saveConnection(connectionData);
+    const success = await ConnectionService.saveConnection(connectionData, setErrorMessage);
     
     if (success) {
       // Refresh the connections list and close the modal
@@ -40,6 +43,7 @@ function SelectedConnectionModal({onBack, onClose, onConnectionSaved, selectedCo
         onClose();
       }
     }
+    //setErrorMessage('')
   };
 
   function handleChange(e) {
@@ -65,6 +69,12 @@ function SelectedConnectionModal({onBack, onClose, onConnectionSaved, selectedCo
 
   return (
     <Card logo={selectedConnectionLogo} closeModal={onClose}>
+
+            {errorMessage && (
+              <div style={{padding: 0, width: '90%', margin: 'auto', marginBottom: '5%'}} className={styles2.errorMessage}>
+                <p style={{textAlign: 'center'}}>{errorMessage}</p>
+              </div>
+            )}
     
     <form className={formStyles['form']} action="">
         <div className={formStyles['form-group']}>
