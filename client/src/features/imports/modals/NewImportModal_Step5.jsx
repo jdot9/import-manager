@@ -32,6 +32,7 @@ function NewImportModal_Step5({
 
   const [formats, setFormats] = useState([]);
   const [selectedMappingIds, setSelectedMappingIds] = useState(new Set());
+  const [hoveredId, setHoveredId] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
 
   const toggleMappingSelection = (id) => {
@@ -191,13 +192,16 @@ function NewImportModal_Step5({
           <h1 style={{color: 'white', marginTop: 0, marginBottom: '1%', cursor: 'pointer'}} onClick={() => setModalIsOpen(false)}>X</h1>
       </div>
 
+        <div style={{padding: 0, width: '33%', margin: 'auto'}} >
+          <p style={{textAlign: 'center', color: 'white', fontWeight: '500'}}>You must map at least 1 <span style={{fontStyle: 'italic'}}>phone</span> property to <span style={{fontStyle: 'italic'}}>number1</span>  Contact Field.</p>
+        </div>
+
       {errorMessage && (
         <div style={{padding: 0, width: '33%', margin: 'auto'}} className={styles2.errorMessage}>
           <p style={{textAlign: 'center'}}>{errorMessage}</p>
         </div>
       )}
             
-
       <div className="table-container">
         <table style={{marginTop: "1%", backgroundColor: 'white'}}>
           <thead>
@@ -212,18 +216,32 @@ function NewImportModal_Step5({
                   <th style={{position: 'sticky', top: 0, borderTop: 'none'}}>HubSpot Property Name</th>
                   <th style={{position: 'sticky', top: 0, borderTop: 'none'}}>Five9 Contact Field Name</th>
           
-
               </tr>
           </thead>
           <tbody>
 
         { mapping.map((item) => (
-        <tr key={item.id}>
+        <tr 
+          key={item.id}
+          onClick={() => toggleMappingSelection(item.id)}
+          onMouseEnter={() => setHoveredId(item.id)}
+          onMouseLeave={() => setHoveredId(null)}
+          style={{
+            cursor: 'pointer',
+            backgroundColor: selectedMappingIds.has(item.id) 
+              ? '#e3f2fd' 
+              : hoveredId === item.id 
+                ? '#e0e0e0' 
+                : 'transparent',
+            transition: 'background-color 0.3s ease'
+          }}
+        >
           <td>
               <input 
                 type="checkbox" 
                 checked={selectedMappingIds.has(item.id)}
                 onChange={() => toggleMappingSelection(item.id)}
+                onClick={(e) => e.stopPropagation()}
               />
           </td>
 
@@ -271,7 +289,7 @@ function NewImportModal_Step5({
               
               <Button onClick={removeSelectedMappings}>Remove Mapping</Button>
               <Button onClick={onBack}>Back</Button>
-              <Button onClick={onComplete} disabled={mapping.length < 1}>Next</Button>
+              <Button onClick={onComplete} disabled={mapping.length < 1 || !mapping.some(map => map.hubspotProperty === 'phone' && map.five9Field === 'number1')}>Next</Button>
             </div>
       </TableNavbar>
 
