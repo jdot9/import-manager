@@ -1,6 +1,5 @@
 import {useState} from 'react'
 import styles from '../../../shared/components/Table.module.css'
-import Toggle from '../../../shared/components/Toggle';
 import HubSpotLogo from '../assets/Hubspot-Logo.jpg';
 import Five9Logo from '../assets/Five9-Logo.jpg';
 import PropTypes from 'prop-types'
@@ -73,7 +72,7 @@ function ConnectionTable({data, onSelectionChange}) {
                 <th key={i++} className={styles.table__header}>{header}</th>
             ))}  
 
-            <th key={i++} className={styles.table__header}>Connect</th>
+            <th key={i++} className={styles.table__header}>Description</th>
       </thead>
       
       <tbody>
@@ -108,10 +107,6 @@ function ConnectionTable({data, onSelectionChange}) {
                     </td>
                     );
                 })}
-                                       
-                <td key={`toggle-${rowIndex}`} className={styles.table__data} data-toggle-cell="true">
-                            <Toggle checked={record.toggleChecked || false}/>
-                </td>                              
             </tr>
          ))}
           

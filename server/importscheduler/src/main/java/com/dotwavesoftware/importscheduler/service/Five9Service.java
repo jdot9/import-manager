@@ -24,8 +24,10 @@ import org.xml.sax.InputSource;
 import com.dotwavesoftware.importscheduler.dto.ContactFieldsResponseDTO;
 import com.dotwavesoftware.importscheduler.entity.ConnectionEntity;
 import com.dotwavesoftware.importscheduler.entity.ConnectionImportMappingEntity;
+import com.dotwavesoftware.importscheduler.entity.ImportEntity;
 import com.dotwavesoftware.importscheduler.repository.ConnectionRepository;
 import com.dotwavesoftware.importscheduler.repository.ConnectionImportMappingRepository;
+import com.dotwavesoftware.importscheduler.util.EncryptionUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import reactor.core.publisher.Flux;
@@ -44,6 +46,8 @@ public class Five9Service {
     private ImportProgressService importProgressService;
     private com.dotwavesoftware.importscheduler.repository.ImportRepository importRepository;
     private Five9RateLimiterService rateLimiter;
+    private final EncryptionUtil encryptionUtil;
+    private final EmailService emailService;
     
     // Track failed records per import (importId -> list of failed contacts)
     private final Map<Integer, List<JsonNode>> failedRecordsMap = new ConcurrentHashMap<>();
@@ -54,7 +58,9 @@ public class Five9Service {
                         HubSpotService hubSpotService,
                         ImportProgressService importProgressService,
                         com.dotwavesoftware.importscheduler.repository.ImportRepository importRepository,
-                        Five9RateLimiterService rateLimiter) 
+                        Five9RateLimiterService rateLimiter,
+                        EncryptionUtil encryptionUtil,
+                        EmailService emailService) 
     {
         this.connectionRepository = connectionRepository;
         this.connectionImportMappingRepository = connectionImportMappingRepository;
@@ -62,6 +68,8 @@ public class Five9Service {
         this.importProgressService = importProgressService;
         this.importRepository = importRepository;
         this.rateLimiter = rateLimiter;
+        this.encryptionUtil = encryptionUtil;
+        this.emailService = emailService;
         this.webClient = WebClient.builder()
                 .baseUrl(baseUrl)
                 .build();
@@ -131,6 +139,32 @@ xmlns:ser="http://service.admin.ws.five9.com/">
                 });
     }
 
+    /**
+     * Get the decrypted Five9 username from a connection.
+     * @param connection The connection entity
+     * @return Decrypted username
+     */
+    private String getDecryptedUsername(ConnectionEntity connection) {
+        String encryptedUsername = connection.getFive9Username();
+        if (encryptedUsername == null || encryptedUsername.isEmpty()) {
+            return null;
+        }
+        return encryptionUtil.decrypt(encryptedUsername);
+    }
+
+    /**
+     * Get the decrypted Five9 password from a connection.
+     * @param connection The connection entity
+     * @return Decrypted password
+     */
+    private String getDecryptedPassword(ConnectionEntity connection) {
+        String encryptedPassword = connection.getFive9Password();
+        if (encryptedPassword == null || encryptedPassword.isEmpty()) {
+            return null;
+        }
+        return encryptionUtil.decrypt(encryptedPassword);
+    }
+
         public Mono<HashMap<String, String>> getDialingLists(int five9ConnectionId) {
         String soapRequest = """
             <env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"
@@ -144,8 +178,8 @@ xmlns:ser="http://service.admin.ws.five9.com/">
             </env:Envelope> 
             """;
         Optional<ConnectionEntity> connection = connectionRepository.findById(five9ConnectionId);
-        String username = connection.get().getFive9Username();
-        String password = connection.get().getFive9Password();
+        String username = getDecryptedUsername(connection.get());
+        String password = getDecryptedPassword(connection.get());
         String credentials = username +":"+ password;
         String base64credentials = Base64.getEncoder().encodeToString(credentials.getBytes());
        // logger.warning(base64credentials);
@@ -202,8 +236,8 @@ xmlns:ser="http://service.admin.ws.five9.com/">
             """;
         // Get Connection credentials
         Optional<ConnectionEntity> connection = connectionRepository.findById(five9ConnectionId);
-        String username = connection.get().getFive9Username();
-        String password = connection.get().getFive9Password();
+        String username = getDecryptedUsername(connection.get());
+        String password = getDecryptedPassword(connection.get());
         String credentials = username +":"+ password;
 
         // Convert Connection credentials to Base64
@@ -244,12 +278,16 @@ xmlns:ser="http://service.admin.ws.five9.com/">
         importProgressService.sendStatus(importId, "STARTING", "Import is running");
         logger.info("Import " + importId + " status set to STARTING");
         
+        // Get import entity for email notification settings
+        Optional<ImportEntity> importEntityOpt = importRepository.findById(importId);
+        final ImportEntity importEntity = importEntityOpt.orElse(null);
+        
         Optional<ConnectionEntity> connection = connectionRepository.findById(five9ConnectionId);
         if (connection.isEmpty()) {
             return Mono.error(new RuntimeException("Five9 connection not found: " + five9ConnectionId));
         }
-        String username = connection.get().getFive9Username();
-        String password = connection.get().getFive9Password();
+        String username = getDecryptedUsername(connection.get());
+        String password = getDecryptedPassword(connection.get());
         String credentials = username + ":" + password;
         String base64credentials = Base64.getEncoder().encodeToString(credentials.getBytes());
 
@@ -286,6 +324,15 @@ xmlns:ser="http://service.admin.ws.five9.com/">
                 
                 // Send started notification via WebSocket
                 importProgressService.sendStarted(importId, contacts.size());
+                
+                // Send email notification if enabled
+                if (importEntity != null && importEntity.isEmailNotification() && importEntity.getEmail() != null) {
+                    emailService.sendImportStartedEmail(
+                        importEntity.getEmail(),
+                        importEntity.getName() != null ? importEntity.getName() : "Import #" + importId,
+                        contacts.size()
+                    );
+                }
                 
                 // Initialize failed records list for this import
                 failedRecordsMap.put(importId, new ArrayList<>());
@@ -364,12 +411,35 @@ xmlns:ser="http://service.admin.ws.five9.com/">
                                     importProgressService.sendCompletion(importId, false, listSize, totalContacts, progressPercent);
                                 }
                                 
+                                // Send email notification if enabled
+                                if (importEntity != null && importEntity.isEmailNotification() && importEntity.getEmail() != null) {
+                                    emailService.sendImportCompletedEmail(
+                                        importEntity.getEmail(),
+                                        importEntity.getName() != null ? importEntity.getName() : "Import #" + importId,
+                                        allSuccess,
+                                        totalRecordsAdded[0],
+                                        totalContacts
+                                    );
+                                }
+                                
                                 return allSuccess;
                             })
                             .onErrorResume(e -> {
                                 logger.warning("Failed to fetch dialing list size: " + e.getMessage());
                                 // Fallback to tracked count if API call fails
                                 importProgressService.sendCompletion(importId, allSuccess, totalRecordsAdded[0], totalContacts, 100);
+                                
+                                // Send email notification if enabled (fallback path)
+                                if (importEntity != null && importEntity.isEmailNotification() && importEntity.getEmail() != null) {
+                                    emailService.sendImportCompletedEmail(
+                                        importEntity.getEmail(),
+                                        importEntity.getName() != null ? importEntity.getName() : "Import #" + importId,
+                                        allSuccess,
+                                        totalRecordsAdded[0],
+                                        totalContacts
+                                    );
+                                }
+                                
                                 return Mono.just(allSuccess);
                             });
                     });

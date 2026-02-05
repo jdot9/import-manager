@@ -18,6 +18,7 @@ import com.dotwavesoftware.importscheduler.entity.ConnectionEntity;
 import com.dotwavesoftware.importscheduler.entity.UserEntity;
 import com.dotwavesoftware.importscheduler.repository.ConnectionRepository;
 import com.dotwavesoftware.importscheduler.repository.UserRepository;
+import com.dotwavesoftware.importscheduler.util.EncryptionUtil;
 
 import reactor.core.publisher.Mono;
 
@@ -29,13 +30,15 @@ public class ConnectionService {
     private final UserRepository userRepository;
     private final HubSpotService hubSpotClient;
     private final Five9Service five9Client;
+    private final EncryptionUtil encryptionUtil;
     
 
-    public ConnectionService(ConnectionRepository connectionRepository, UserRepository userRepository, HubSpotService hubSpotClient, Five9Service five9Client) {
+    public ConnectionService(ConnectionRepository connectionRepository, UserRepository userRepository, HubSpotService hubSpotClient, Five9Service five9Client, EncryptionUtil encryptionUtil) {
         this.connectionRepository = connectionRepository;
         this.userRepository = userRepository;
         this.hubSpotClient = hubSpotClient;
         this.five9Client = five9Client;
+        this.encryptionUtil = encryptionUtil;
     }
 
     // Get all connections associated with a user's uuid
@@ -146,10 +149,11 @@ public class ConnectionService {
        }
        
        // Convert empty strings to null to avoid UNIQUE constraint violations
-       connection.setFive9Username(isNullOrEmpty(connectionDTO.getFive9Username()) ? null : connectionDTO.getFive9Username());
-       connection.setFive9Password(isNullOrEmpty(connectionDTO.getFive9Password()) ? null : connectionDTO.getFive9Password());
-       connection.setHubspotAccessToken(isNullOrEmpty(hubspotAccessToken) ? null : hubspotAccessToken);
-       connection.setStatus("DISCONNECTED");
+       // Encrypt sensitive credentials before saving to database
+       connection.setFive9Username(isNullOrEmpty(connectionDTO.getFive9Username()) ? null : encryptionUtil.encrypt(connectionDTO.getFive9Username()));
+       connection.setFive9Password(isNullOrEmpty(connectionDTO.getFive9Password()) ? null : encryptionUtil.encrypt(connectionDTO.getFive9Password()));
+       connection.setHubspotAccessToken(isNullOrEmpty(hubspotAccessToken) ? null : encryptionUtil.encrypt(hubspotAccessToken));
+       connection.setStatus("CONNECTED");
        
        UUID userUuid = UUID.fromString(connectionDTO.getUserUuid());
        UserEntity user = userRepository.findByUUID(userUuid)

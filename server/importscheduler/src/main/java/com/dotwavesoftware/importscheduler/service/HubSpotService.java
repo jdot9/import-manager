@@ -25,6 +25,7 @@ import com.dotwavesoftware.importscheduler.entity.ConnectionImportMappingEntity;
 import com.dotwavesoftware.importscheduler.repository.ConnectionRepository;
 import com.dotwavesoftware.importscheduler.repository.ConnectionImportMappingRepository;
 import com.dotwavesoftware.importscheduler.util.ConversionUtil;
+import com.dotwavesoftware.importscheduler.util.EncryptionUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.TextNode;
@@ -37,14 +38,17 @@ public class HubSpotService {
     private final WebClient webClient;
     private ConnectionRepository connectionRepository;
     private ConnectionImportMappingRepository connectionImportMappingRepository;
+    private final EncryptionUtil encryptionUtil;
     private static final Logger logger = Logger.getLogger(HubSpotService.class.getName());
     
     public HubSpotService(@Value("${api.hubspot.baseurl}") String baseUrl, 
                           ConnectionRepository connectionRepository,
-                          ConnectionImportMappingRepository connectionImportMappingRepository) 
+                          ConnectionImportMappingRepository connectionImportMappingRepository,
+                          EncryptionUtil encryptionUtil) 
     {
         this.connectionRepository = connectionRepository;
         this.connectionImportMappingRepository = connectionImportMappingRepository;
+        this.encryptionUtil = encryptionUtil;
         
         // Increase buffer size to 2MB to handle large API responses
         ExchangeStrategies strategies = ExchangeStrategies.builder()
@@ -97,7 +101,7 @@ public Mono<List<JsonNode>> getAllContacts(int id) {
 public Flux<JsonNode> getAllContactsFlux(int id) {
     logger.info("Getting contacts from HubSpot.");
     Optional<ConnectionEntity> connection = connectionRepository.findById(id);
-    String token = connection.get().getHubspotAccessToken();
+    String token = getDecryptedAccessToken(connection.get());
     logger.info("Getting access token from connection " + id);
     // Start with an initial empty request (no "after")
     return fetchContactsPage(token, null)
@@ -128,7 +132,7 @@ public Flux<JsonNode> getAllContactsFlux(int id) {
         // Get Hubspot connection object 
         logger.info("Getting all Hubspot Properties");
         Optional<ConnectionEntity> connection = connectionRepository.findById(id);
-        String accessToken = connection.get().getHubspotAccessToken();
+        String accessToken = getDecryptedAccessToken(connection.get());
         return webClient.get()
                     .uri("/crm/v3/properties/contacts")
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
@@ -158,9 +162,10 @@ public Flux<JsonNode> getAllContactsFlux(int id) {
         Optional<ConnectionEntity> connection = connectionRepository.findById(id);
         logger.info("Getting access token from connection " + id);
         logger.info("Attempting to retrieve lists from HubSpot.");
+        String accessToken = getDecryptedAccessToken(connection.get());
         return webClient.post()
                 .uri("/crm/v3/lists/search")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + connection.get().getHubspotAccessToken())
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(requestBody)
                 .retrieve()
@@ -253,7 +258,7 @@ public Flux<JsonNode> getAllContactsFlux(int id) {
         if (connection.isEmpty()) {
             return Flux.error(new RuntimeException("Connection not found: " + connectionId));
         }
-        String token = connection.get().getHubspotAccessToken();
+        String token = getDecryptedAccessToken(connection.get());
         
         return fetchListMembershipsPage(token, listId, null)
                 .expand(response -> {
@@ -302,7 +307,7 @@ public Flux<JsonNode> getAllContactsFlux(int id) {
         if (connection.isEmpty()) {
             return Mono.error(new RuntimeException("Connection not found: " + connectionId));
         }
-        String token = connection.get().getHubspotAccessToken();
+        String token = getDecryptedAccessToken(connection.get());
         
         // Get sending_connection_field_name values from mappings
         List<ConnectionImportMappingEntity> mappings = connectionImportMappingRepository.findByImportId(importId);
@@ -416,5 +421,18 @@ public Flux<JsonNode> getAllContactsFlux(int id) {
                lower.equals("number1") ||
                lower.equals("number2") ||
                lower.equals("number3");
+    }
+
+    /**
+     * Get the decrypted HubSpot access token from a connection.
+     * @param connection The connection entity
+     * @return Decrypted access token
+     */
+    private String getDecryptedAccessToken(ConnectionEntity connection) {
+        String encryptedToken = connection.getHubspotAccessToken();
+        if (encryptedToken == null || encryptedToken.isEmpty()) {
+            return null;
+        }
+        return encryptionUtil.decrypt(encryptedToken);
     }
 }

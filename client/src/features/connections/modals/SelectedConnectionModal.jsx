@@ -98,7 +98,7 @@ function SelectedConnectionModal({onBack, onClose, onConnectionSaved, selectedCo
           <>
             <div className={formStyles['form-group']}>
               <label htmlFor='five9Username' className={formStyles['form-group__label']}>Username:</label>
-              <input type='text' id='five9Username' name='five9Username' value={formData.five9Username} onChange={handleChange} className={formStyles['form-group__input']} />
+              <input type='password' id='five9Username' name='five9Username' value={formData.five9Username} onChange={handleChange} className={formStyles['form-group__input']} />
             </div>
             <div className={formStyles['form-group']}>
               <label htmlFor='five9Password' className={formStyles['form-group__label']}>Password:</label>

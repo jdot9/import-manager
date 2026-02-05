@@ -37,6 +37,10 @@ const handleDeleteConnections = async () => {
                       disabled={selectedFromChild.length === 0}> - Delete Connection </Button>
 
               <Button style={{float: 'right'}} 
+                      onClick={{}}
+                      disabled={selectedFromChild.length ===0}> + Test Connection </Button>
+
+              <Button style={{float: 'right'}} 
                       onClick={() => setConnectionModalIsOpen(true)}> + New Connection </Button>
           </Toolbar>
 

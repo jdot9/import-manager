@@ -26,12 +26,14 @@ function NewImportModal_Step4({setModalIsOpen, five9ConnectionId, selectedDialin
      }
    };
 
-   // Transform API data to TableImport format
+   // Transform API data to TableImport format and sort alphabetically by name
    const transformedData = useMemo(() => {
-     return data.map((record, index) => ({
-       id: record.name || index,
-       cells: [record.name, record.size]
-     }));
+     return data
+       .map((record, index) => ({
+         id: record.name || index,
+         cells: [record.name, record.size]
+       }))
+       .sort((a, b) => (a.cells[0] || '').localeCompare(b.cells[0] || ''));
    }, [data]);
        
   // Get Dialing List from Five9 Configuration Web Services API 

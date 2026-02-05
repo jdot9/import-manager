@@ -47,7 +47,7 @@ CREATE TABLE connections (
   five9_username VARCHAR(255),
   five9_password VARCHAR(255),
   hubspot_access_token VARCHAR(255),
-  status VARCHAR(255) DEFAULT 'DISCONNECTED',
+  status VARCHAR(255) DEFAULT 'CONNECTED',
   import_id INT,
   user_uuid BINARY(16),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

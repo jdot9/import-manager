@@ -53,6 +53,7 @@ function useGetConnections() {
         record.name,
         formatDate(record.createdAt),
         record.status,
+        record.description || '',
       ]
     }));
   }, [data, getConnectionType]);
