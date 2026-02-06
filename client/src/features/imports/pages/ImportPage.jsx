@@ -65,7 +65,7 @@ function ImportPage() {
     setSelectedIds([]);
     await fetchImports();
     
-    alert(`Successfully deleted ${deletedCount} import(s)`);
+   // alert(`Successfully deleted ${deletedCount} import(s)`);
   };
 
   const headers = ["Name", "Datetime Created","Start Datetime", "Completion Datetime", "Progress", "Status"];

@@ -25,12 +25,12 @@ class ImportService {
                 },
                 body: JSON.stringify(importData)
             })
-            alert(JSON.stringify(importData))
+           
             if(response.ok) {
-                alert(response.text())
+                alert("Import saved")
                 return true;
             } else {
-                alert(response.text())
+                alert("Import failed to save")
                 return false;
             }
             
