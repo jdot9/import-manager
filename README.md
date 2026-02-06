@@ -19,7 +19,9 @@ server -> importscheduler -> src -> main -> resources -> application.properties
 Set your database credentials (url, username, password):
 
 spring.datasource.url={Insert database URL here}
+
 spring.datasource.username={Insert database username here}
+
 spring.datasource.password={Insert database password here}
 
 ## Email Configuration
@@ -30,6 +32,7 @@ To generate an App Password: Google Account > Security > 2-Step Verification > A
 Once you have your App password, set your email credentials:
 
 spring.mail.username={Insert your gmail username here}
+
 spring.mail.password={Insert your App password here}
 
 ## Google OAuth2.0 Configuration
@@ -81,6 +84,7 @@ Click Create.
 ### Step 4 (Final): Set your OAuth2.0 credentials in the application.properties file
 
 spring.security.oauth2.client.registration.google.client-id={Insert Google Client ID here}
+
 spring.security.oauth2.client.registration.google.client-secret={Insert Google Client Secret here}
 
 
