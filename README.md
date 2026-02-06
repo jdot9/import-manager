@@ -10,7 +10,7 @@ This application enables users to schedule automated import sessions for importi
 <img width="1035" height="403" alt="import-manager-architecture" src="https://github.com/user-attachments/assets/00944f64-f218-40e2-b262-3dd5465edd3e" />
 
 
-<img width="682" height="386" alt="import-manager-architecture2" src="https://github.com/user-attachments/assets/160f6601-a205-4d16-bd6a-ef5337cc4eff" />
+<img width="1035" height="403" alt="import-manager-architecture2" src="https://github.com/user-attachments/assets/160f6601-a205-4d16-bd6a-ef5337cc4eff" />
 
 # Set Up
 Open a terminal
