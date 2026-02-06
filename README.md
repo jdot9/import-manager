@@ -3,7 +3,7 @@
 This application enables users to schedule automated import sessions for importing HubSpot CRM contact lists into Five9 Virtual Contact Center outbound dialing lists.
 
 # Demonstration
-[Insert video here]
+https://youtu.be/ctKm6C9t6Jw
 
 # System Architecture
 
