@@ -36,7 +36,6 @@ To generate an App Password: Google Account > Security > 2-Step Verification > A
 Once you have your App password, set your email credentials:
 
 spring.mail.username={Insert your gmail username here}
-
 spring.mail.password={Insert your App password here}
 
 ## Google OAuth2.0 Configuration
@@ -116,6 +115,24 @@ spring.security.oauth2.client.registration.google.client-secret={Insert Google C
 
 
 
+# Tech Stack
 
+- React
+- Spring Boot
+- MySQL
 
+# Experience Gained
+
+- OAuth 2.0
+- REST API Integration 
+- SOAP API Integration
+- Rate Limiting
+- Web Sockets
+- Cron Jobs
+- Virtual Threads
+- BCrypt Hashing 
+- AES Encryption 
+- Form Validation
+- Typeahead pattern
+- Dual ID pattern
 
