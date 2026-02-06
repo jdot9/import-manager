@@ -6,7 +6,8 @@ This application enables users to schedule automated import sessions for importi
 [Insert video here]
 
 # System Architecture
-[Insert design here]
+
+<img width="1035" height="403" alt="import-manager-architecture" src="https://github.com/user-attachments/assets/00944f64-f218-40e2-b262-3dd5465edd3e" />
 
 # Set Up
 Open a terminal
