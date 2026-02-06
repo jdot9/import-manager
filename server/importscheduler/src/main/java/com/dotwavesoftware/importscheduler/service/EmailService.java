@@ -1,5 +1,6 @@
 package com.dotwavesoftware.importscheduler.service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.mail.javamail.JavaMailSender;
 import java.util.logging.Logger;
@@ -11,11 +12,13 @@ import org.springframework.mail.SimpleMailMessage;
 public class EmailService {
     
     private final JavaMailSender mailSender;
+    private final String fromEmail;
     private static final Logger logger = Logger.getLogger(EmailService.class.getName());
 
     
-    public EmailService(JavaMailSender mailSender) {
+    public EmailService(JavaMailSender mailSender, @Value("${spring.mail.username}") String fromEmail) {
         this.mailSender = mailSender;
+        this.fromEmail = fromEmail;
     }
 
     private boolean isValidEmailAddress(String email) {
@@ -37,7 +40,7 @@ public class EmailService {
 
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("jasontestingemail9@gmail.com");
+            message.setFrom(fromEmail);
             message.setTo(to);
             message.setSubject("Import Manager ");
             message.setText("Dear " + firstName + ",\n\n" +
@@ -60,12 +63,12 @@ public class EmailService {
 
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("jasontestingemail9@gmail.com");
+            message.setFrom(fromEmail);
             message.setTo(to);
             message.setSubject("Your Password Has Been Reset - Import Manager");
             message.setText("Hello,\n\n" +
                           "Your password has been successfully reset.\n\n" +
-                          "If you did not make this change, please contact support immediately at jasontestingemail9@gmail.com.\n\n" +
+                          "If you did not make this change, please contact support immediately at " + fromEmail + ".\n\n" +
                           "For your security, we recommend:\n" +
                           "- Using a strong, unique password\n" +
                           "- Not sharing your password with anyone\n" +
@@ -94,7 +97,7 @@ public class EmailService {
 
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("jasontestingemail9@gmail.com");
+            message.setFrom(fromEmail);
             message.setTo(to);
             message.setSubject("Import Started: " + importName + " - Import Manager");
             message.setText("Hello,\n\n" +
@@ -130,7 +133,7 @@ public class EmailService {
 
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("jasontestingemail9@gmail.com");
+            message.setFrom(fromEmail);
             message.setTo(to);
             
             String status = success ? "Completed Successfully" : "Completed with Errors";
