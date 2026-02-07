@@ -5,6 +5,8 @@ import Button from '../../../shared/components/Button';
 import TableNavbar from '../../../shared/components/TableNavbar';
 import TableHat from '../components/TableHat';
 import TableImport from '../components/TableImport';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 
 // Step 4: Select a Five9 Dialing List.
 function NewImportModal_Step4({setModalIsOpen, five9ConnectionId, selectedDialingListId, onDialingListSelect, onBack}) {
@@ -12,8 +14,13 @@ function NewImportModal_Step4({setModalIsOpen, five9ConnectionId, selectedDialin
    const [data, setData] = useState([]);
    const [loading, setLoading] = useState(true);
    const [selectedId, setSelectedId] = useState(selectedDialingListId);
+   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'error' });
    const state = useLocation()?.state;
    const selectedDialingList = useRef(null);
+
+   const handleSnackbarClose = () => {
+     setSnackbar({ ...snackbar, open: false });
+   };
    
    const f9ConnectionId = five9ConnectionId || state?.five9ConnectionId;
    
@@ -66,7 +73,11 @@ useEffect(() => {
         console.log('Fetch aborted');
       } else {
         console.error("Error:", error);
-        alert("Failed to retrieve Five9 dialing lists.");
+        setSnackbar({
+          open: true,
+          message: "Failed to retrieve Five9 dialing lists.",
+          severity: 'error'
+        });
       }
     } finally {
       setLoading(false);
@@ -97,6 +108,17 @@ useEffect(() => {
         <Button onClick={() => onBack()}>Back</Button>
         <Button onClick={() => onDialingListSelect(selectedDialingList.current)} disabled={!selectedId}>Next</Button>
       </TableNavbar>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
         
     </div>
   )

@@ -14,8 +14,7 @@ async saveConnection(connection, setErrorMessage) {
     });
 
     if (response.ok) {
-      alert('Connection saved successfully');
-      return true;
+      return { success: true, message: 'Connection saved successfully' };
     } else {
       const errorText = await response.text();
       //alert('Error: ' + errorText);

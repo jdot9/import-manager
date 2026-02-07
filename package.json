@@ -1,5 +1,8 @@
 {
   "dependencies": {
-    "@hubspot/cli": "^7.11.2"
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@hubspot/cli": "^7.11.2",
+    "@mui/material": "^7.3.7"
   }
 }

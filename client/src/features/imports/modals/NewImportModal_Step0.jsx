@@ -8,6 +8,8 @@ import NewImportModal_Step4 from './NewImportModal_Step4'
 import NewImportModal_Step5 from './NewImportModal_Step5'
 import NewImportModal_Step6 from './NewImportModal_Step6'
 import ImportService from '../services/ImportService'
+import Snackbar from '@mui/material/Snackbar'
+import Alert from '@mui/material/Alert'
 
 /* Multi Step Import Modal */
 
@@ -25,6 +27,13 @@ function NewImportModal({modalIsOpen, setModalIsOpen, onImportSaved}) {
     // Step 5 state - lifted up to preserve across navigation
     const [step5Mapping, setStep5Mapping] = useState([]);
     const [step5NextMappingId, setStep5NextMappingId] = useState(1);
+
+    // Snackbar state
+    const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+    
+    const handleSnackbarClose = () => {
+        setSnackbar({ ...snackbar, open: false });
+    };
 
     const handleHubspotConnectionSelect = (connectionId) => {
         setHubspotConnectionId(connectionId);
@@ -134,15 +143,32 @@ function NewImportModal({modalIsOpen, setModalIsOpen, onImportSaved}) {
         mapping={step5Mapping}
         onBack={() => setStep(5)}
         onSave={(scheduleData) => {
-          ImportService.saveImport(user?.uuid, step5Mapping, scheduleData, testDialingList.current).then((success) => {
-            if (success) {
-              setModalIsOpen(false);
-              if (onImportSaved) onImportSaved();
+          ImportService.saveImport(user?.uuid, step5Mapping, scheduleData, testDialingList.current).then((result) => {
+            setSnackbar({
+              open: true,
+              message: result.message,
+              severity: result.success ? 'success' : 'error'
+            });
+            if (result.success) {
+              setTimeout(() => {
+                setModalIsOpen(false);
+                if (onImportSaved) onImportSaved();
+              }, 1500);
             }
           });
         }}
       />
     )}
+    <Snackbar
+      open={snackbar.open}
+      autoHideDuration={4000}
+      onClose={handleSnackbarClose}
+      anchorOrigin={{ vertical: "top", horizontal: "center" }}
+    >
+      <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%' }}>
+        {snackbar.message}
+      </Alert>
+    </Snackbar>
   </Modal>
   )
 }

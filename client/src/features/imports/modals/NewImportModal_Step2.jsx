@@ -5,6 +5,8 @@ import Button from '../../../shared/components/Button';
 import TableNavbar from '../../../shared/components/TableNavbar';
 import TableHat from '../components/TableHat';
 import TableImport from '../components/TableImport';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 
 // Step 2: Select a HubSpot List.
 function NewImportModal_Step2({setModalIsOpen, hubspotConnectionId, selectedListId, onListSelect, onBack}) {
@@ -17,8 +19,13 @@ function NewImportModal_Step2({setModalIsOpen, hubspotConnectionId, selectedList
  const [data, setData] = useState([]);
  const [loading, setLoading] = useState(true);
  const [selectedId, setSelectedId] = useState(selectedListId || null);
+ const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'error' });
 
  const headers = ["Name", "List Size", "Type", "Object", "Last Updated"];
+
+ const handleSnackbarClose = () => {
+   setSnackbar({ ...snackbar, open: false });
+ };
 
 
  // Get HubSpot lists
@@ -47,7 +54,11 @@ function NewImportModal_Step2({setModalIsOpen, hubspotConnectionId, selectedList
         console.log("HubSpot lists retrieved:", result)
       } catch (error) {
         console.log("Failed to retrieve HubSpot Lists. " + error);
-        alert("Failed to retrieve HubSpot Lists.");
+        setSnackbar({
+          open: true,
+          message: "Failed to retrieve HubSpot Lists.",
+          severity: 'error'
+        });
       } finally {
         setLoading(false);
       }
@@ -92,6 +103,17 @@ function NewImportModal_Step2({setModalIsOpen, hubspotConnectionId, selectedList
         <Button onClick={() => onBack()}>Back</Button>
         <Button onClick={() => onListSelect(selectedId)} disabled={!selectedId}>Next</Button>
       </TableNavbar>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     
     </div>
   )

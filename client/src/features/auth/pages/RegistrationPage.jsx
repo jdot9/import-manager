@@ -5,11 +5,18 @@ import Spinner from "../../../shared/components/Spinner"
 import { NavLink, useNavigate } from "react-router"
 import styles from "./LoginPage.module.css"
 import UserService from "../services/AuthService"
+import Snackbar from '@mui/material/Snackbar'
+import Alert from '@mui/material/Alert'
 
 function RegistrationPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' })
   const navigate = useNavigate()
+
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false })
+  }
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -49,8 +56,15 @@ function RegistrationPage() {
     try {
       const response = await UserService.register(formData)
       console.log(response)
-      // Redirect to login page on successful registration
-      navigate('/login')
+      setSnackbar({
+        open: true,
+        message: response.message,
+        severity: 'success'
+      })
+      // Redirect to login page on successful registration after a short delay
+      setTimeout(() => {
+        navigate('/login')
+      }, 1500)
     } catch (error) {
       console.error(error.message)
       const errorMessage = typeof error.responseBody === 'object' 
@@ -111,6 +125,17 @@ function RegistrationPage() {
         <NavLink to="/login" className={styles.link}>Go back</NavLink>
 
       </form>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Card>
   )
 }

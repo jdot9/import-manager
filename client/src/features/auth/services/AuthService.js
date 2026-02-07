@@ -118,13 +118,11 @@ class UserService {
       throw error;
     }
     
-    // Display success response body
-    alert(typeof responseBody === 'object' 
-      ? JSON.stringify(responseBody, null, 2) 
-      : responseBody
-    );
-    
-    return responseBody;
+    return {
+      success: true,
+      message: 'Registration successful',
+      data: responseBody
+    };
   }
 
   /**

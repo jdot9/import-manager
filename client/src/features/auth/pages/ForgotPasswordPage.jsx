@@ -5,6 +5,8 @@ import Spinner from '../../../shared/components/Spinner'
 import { NavLink } from 'react-router-dom'
 import styles from './LoginPage.module.css'
 import UserService from '../services/AuthService'
+import Snackbar from '@mui/material/Snackbar'
+import Alert from '@mui/material/Alert'
 
 function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -15,6 +17,11 @@ function ForgotPasswordPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState(1) // 1: email, 2: security question, 3: reset password
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' })
+
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false })
+  }
 
   const handleEmailSubmit = async (e) => {
     e.preventDefault()
@@ -82,8 +89,14 @@ function ForgotPasswordPage() {
     setLoading(true)
     try {
       await UserService.resetPassword(email, newPassword)
-      alert('Password reset successfully!')
-      window.location.href = '/login'
+      setSnackbar({
+        open: true,
+        message: 'Password reset successfully!',
+        severity: 'success'
+      })
+      setTimeout(() => {
+        window.location.href = '/login'
+      }, 1500)
     } catch (err) {
       setError(err.message || 'Password reset failed')
     } finally {
@@ -226,6 +239,17 @@ function ForgotPasswordPage() {
             Back to Login
           </NavLink>
         </div>
+
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={4000}
+          onClose={handleSnackbarClose}
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        >
+          <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%' }}>
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
       </Card>
     </div>
   )

@@ -4,6 +4,8 @@ import Button from '../../../shared/components/Button';
 import TableNavbar from '../../../shared/components/TableNavbar';
 import TableHat from '../components/TableHat';
 import TableImport from '../components/TableImport';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 
 // Step 1: Select a HubSpot Connection.
 function NewImportModal_Step1({setModalIsOpen, selectedConnectionId, onConnectionSelect}) {
@@ -11,8 +13,13 @@ function NewImportModal_Step1({setModalIsOpen, selectedConnectionId, onConnectio
 const [data, setData] = useState([]);
 const [loading, setLoading] = useState(true);
 const [selectedId, setSelectedId] = useState(selectedConnectionId);
+const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'error' });
 
 const headers = ["Name", "Status"];
+
+const handleSnackbarClose = () => {
+  setSnackbar({ ...snackbar, open: false });
+};
 
 const setConnection = (selectedIds) => {
   if (selectedIds && selectedIds.length > 0) {
@@ -62,7 +69,11 @@ useEffect(() => {
     } catch (error) {
         console.log(error);
         if (error.name !== 'AbortError') {
-          alert("Failed to retrieve HubSpot connections.");
+          setSnackbar({
+            open: true,
+            message: "Failed to retrieve HubSpot connections.",
+            severity: 'error'
+          });
         }
     } finally {
       setLoading(false);
@@ -92,6 +103,17 @@ useEffect(() => {
       <TableNavbar>
         <Button onClick={() => onConnectionSelect(selectedId)} disabled={!selectedId}>Next</Button>
       </TableNavbar>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
 
     </div>
   )

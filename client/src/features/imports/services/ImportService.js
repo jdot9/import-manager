@@ -27,17 +27,14 @@ class ImportService {
             })
            
             if(response.ok) {
-                alert("Import saved")
-                return true;
+                return { success: true, message: "Import saved" };
             } else {
-                alert("Import failed to save")
-                return false;
+                return { success: false, message: "Import failed to save" };
             }
             
         } catch (error) {
             console.error('Error saving import:', error);
-            alert('Error saving import: ' + error.message);
-            return false;
+            return { success: false, message: 'Error saving import: ' + error.message };
         }
             
             

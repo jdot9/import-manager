@@ -7,6 +7,9 @@ import Toolbar from '../../../shared/components/Toolbar'
 import ImportService from '../services/ImportService'
 import { formatDate } from '../../../shared/util/FormatDate'
 import { useImportProgress } from '../../../shared/hooks/useImportProgress'
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogActions from "@mui/material/DialogActions";
 
 
 function ImportPage() {
@@ -18,6 +21,7 @@ function ImportPage() {
   const [toggleStates, setToggleStates] = useState({}); // Local toggle states for immediate UI response
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   // WebSocket hook for real-time progress updates
   const { connected, getProgressDisplay, getStatus, getCompletionDatetime } = useImportProgress();
@@ -44,16 +48,18 @@ function ImportPage() {
     fetchImports();
   }, []);
 
-  // Delete selected imports
-  const handleDeleteSelected = async () => {
+  // Open delete confirmation dialog
+  const handleDeleteClick = () => {
     if (selectedIds.length === 0) {
       alert('Please select at least one import to delete');
       return;
     }
+    setDeleteDialogOpen(true);
+  };
 
-    const confirmDelete = window.confirm(`Are you sure you want to delete ${selectedIds.length} import(s)?`);
-    if (!confirmDelete) return;
-
+  // Delete selected imports
+  const handleConfirmDelete = async () => {
+    setDeleteDialogOpen(false);
     setLoading(true);
     let deletedCount = 0;
 
@@ -64,8 +70,6 @@ function ImportPage() {
 
     setSelectedIds([]);
     await fetchImports();
-    
-   // alert(`Successfully deleted ${deletedCount} import(s)`);
   };
 
   const headers = ["Name", "Datetime Created","Start Datetime", "Completion Datetime", "Progress", "Status"];
@@ -159,7 +163,7 @@ function ImportPage() {
     <>
          <Toolbar title={`Imports: ${data.length}`}>
        
-             <Button style={{float: 'right'}} onClick={handleDeleteSelected} disabled={selectedIds.length === 0}>
+             <Button style={{float: 'right'}} onClick={handleDeleteClick} disabled={selectedIds.length === 0}>
                - Delete Import 
              </Button>
              <Button style={{float: 'right'}} onClick={() => setModalIsOpen(true)}>+ New Import</Button>
@@ -176,6 +180,15 @@ function ImportPage() {
         onSelectionChange={handleSelectionChange}
         onToggleChange={handleToggleChange}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+        <DialogTitle>Are you sure you want to delete the selected import(s)?</DialogTitle>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleConfirmDelete}>Confirm</Button>
+        </DialogActions>
+      </Dialog>
 
     </>
   )

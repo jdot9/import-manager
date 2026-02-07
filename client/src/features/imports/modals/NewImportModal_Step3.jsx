@@ -5,6 +5,8 @@ import Button from '../../../shared/components/Button';
 import TableNavbar from '../../../shared/components/TableNavbar';
 import TableHat from '../components/TableHat';
 import TableImport from '../components/TableImport';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 
 // Step 3: Select a Five9 Connection.
 function NewImportModal_Step3({setModalIsOpen, hubspotConnectionId, hubspotListId, selectedConnectionId, onConnectionSelect, onBack}) {
@@ -13,7 +15,12 @@ function NewImportModal_Step3({setModalIsOpen, hubspotConnectionId, hubspotListI
  const [data, setData] = useState([]);
  const [loading, setLoading] = useState(true);
  const [selectedId, setSelectedId] = useState(selectedConnectionId);
+ const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'error' });
  const state = useLocation()?.state;
+
+ const handleSnackbarClose = () => {
+   setSnackbar({ ...snackbar, open: false });
+ };
  
  const hsConnectionId = hubspotConnectionId || state?.hubspotConnectionId;
  const hsListId = hubspotListId || state?.hubspotListId;
@@ -63,7 +70,11 @@ const transformedData = useMemo(() => {
 
       } catch (error) {
         console.log(error);
-        alert("Failed to retrieve Five9 connections.");
+        setSnackbar({
+          open: true,
+          message: "Failed to retrieve Five9 connections.",
+          severity: 'error'
+        });
       } finally {
         setLoading(false);
       }
@@ -94,6 +105,17 @@ const transformedData = useMemo(() => {
         <Button onClick={() => onBack()}>Back</Button>
         <Button onClick={() => onConnectionSelect(selectedId)} disabled={!selectedId}>Next</Button>
       </TableNavbar>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
         
     </div>
   )

@@ -9,10 +9,13 @@ import hubspotlogo from '../assets/Hubspot-Logo.jpg'
 import five9logo from '../assets/Five9-Logo.jpg'
 import salesforcelogo from '../assets/Salesforce-Logo.jpg'
 import styles2 from '../../auth/pages/LoginPage.module.css'
+import Snackbar from '@mui/material/Snackbar'
+import Alert from '@mui/material/Alert'
 
 function SelectedConnectionModal({onBack, onClose, onConnectionSaved, selectedConnection, userUuid}) {
 
   const [errorMessage, setErrorMessage] = useState('');
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -24,6 +27,10 @@ function SelectedConnectionModal({onBack, onClose, onConnectionSaved, selectedCo
 
   console.log('User UUID:', userUuid);
 
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
   const handleCreate = async () => {
     setErrorMessage('');
     const connectionData = {
@@ -32,18 +39,24 @@ function SelectedConnectionModal({onBack, onClose, onConnectionSaved, selectedCo
       type: selectedConnection === "hubspot" ? "hubspot" : "five9"
     };
     console.log('Creating connection with data:', connectionData);
-    const success = await ConnectionService.saveConnection(connectionData, setErrorMessage);
+    const result = await ConnectionService.saveConnection(connectionData, setErrorMessage);
     
-    if (success) {
-      // Refresh the connections list and close the modal
-      if (onConnectionSaved) {
-        onConnectionSaved();
-      }
-      if (onClose) {
-        onClose();
-      }
+    if (result.success) {
+      setSnackbar({
+        open: true,
+        message: result.message,
+        severity: 'success'
+      });
+      // Refresh the connections list and close the modal after a short delay
+      setTimeout(() => {
+        if (onConnectionSaved) {
+          onConnectionSaved();
+        }
+        if (onClose) {
+          onClose();
+        }
+      }, 1500);
     }
-    //setErrorMessage('')
   };
 
   function handleChange(e) {
@@ -129,6 +142,17 @@ function SelectedConnectionModal({onBack, onClose, onConnectionSaved, selectedCo
         Create
       </Button>
     </TableNavbar>
+
+    <Snackbar
+      open={snackbar.open}
+      autoHideDuration={4000}
+      onClose={handleSnackbarClose}
+      anchorOrigin={{ vertical: "top", horizontal: "center" }}
+    >
+      <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%' }}>
+        {snackbar.message}
+      </Alert>
+    </Snackbar>
   </Card>
   );
 }
